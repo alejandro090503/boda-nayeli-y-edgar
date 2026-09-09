@@ -7,13 +7,13 @@
   <title>Nayeli &amp; Edgar · 21 · Febrero · 2027</title>
   <meta property="og:title" content="Nayeli &amp; Edgar · 21 · Febrero · 2027">
   <meta property="og:description" content="¡Estás invitado a nuestra boda! Tlaquepaque, Jalisco · 21 de Febrero 2027">
-  <meta property="og:image" content="https://boda-nayeli-y-edgar.vercel.app/sobre.png">
+  <meta property="og:image" content="https://boda-nayeli-y-edgar.vercel.app/og.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://boda-nayeli-y-edgar.vercel.app">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://boda-nayeli-y-edgar.vercel.app/sobre.png">
+  <meta name="twitter:image" content="https://boda-nayeli-y-edgar.vercel.app/og.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&family=Pinyon+Script&family=Italiana&display=swap" rel="stylesheet">
@@ -1588,7 +1588,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else { sobreVid.addEventListener('playing', crossfade, {once:true}); }
   });
 
-  const VIDEO_CUT = 3;
+  const VIDEO_CUT = 6.2;
   let videoCutDone = false;
   sobreVid.addEventListener('timeupdate', () => {
     if(!videoCutDone && sobreVid.currentTime >= VIDEO_CUT){
@@ -1679,23 +1679,29 @@ function scrollAnims() {
      Siempre fromTo + immediateRender:false: si un trigger no
      llegara a dispararse, el elemento queda visible.        */
   const EFFECTS = {
-    fadeUp:    { from:{opacity:0, y:34},                         to:{opacity:1, y:0},               d:.85, e:'power3.out' },
-    slideLeft: { from:{opacity:0, x:-52},                        to:{opacity:1, x:0},               d:.9,  e:'power3.out' },
-    slideRight:{ from:{opacity:0, x:52},                         to:{opacity:1, x:0},               d:.9,  e:'power3.out' },
-    scaleIn:   { from:{opacity:0, scale:.82},                    to:{opacity:1, scale:1},           d:.85, e:'back.out(1.5)' },
-    blurIn:    { from:{opacity:0, filter:'blur(12px)', y:16},    to:{opacity:1, filter:'blur(0px)', y:0}, d:1.05, e:'power2.out' },
-    rotateIn:  { from:{opacity:0, rotate:-6, y:30, scale:.94},   to:{opacity:1, rotate:0, y:0, scale:1},  d:.95, e:'power3.out' },
-    clipWipe:  { from:{opacity:0, clipPath:'inset(0 0 100% 0)', y:18}, to:{opacity:1, clipPath:'inset(0 0 0% 0)', y:0}, d:1, e:'power2.out' },
-    dropIn:    { from:{opacity:0, y:-38, rotate:3},              to:{opacity:1, y:0, rotate:0},     d:.9,  e:'back.out(1.4)' },
+    fadeUp:    { from:{opacity:0, y:26},                        to:{opacity:1, y:0},                     d:1.0,  e:'power2.out' },
+    slideLeft: { from:{opacity:0, x:-38},                       to:{opacity:1, x:0},                     d:1.05, e:'power2.out' },
+    slideRight:{ from:{opacity:0, x:38},                        to:{opacity:1, x:0},                     d:1.05, e:'power2.out' },
+    scaleIn:   { from:{opacity:0, scale:.9},                    to:{opacity:1, scale:1},                 d:1.0,  e:'power2.out' },
+    blurIn:    { from:{opacity:0, filter:'blur(8px)', y:14},    to:{opacity:1, filter:'blur(0px)', y:0}, d:1.15, e:'power2.out' },
+    rotateIn:  { from:{opacity:0, rotate:-4, y:22, scale:.96},  to:{opacity:1, rotate:0, y:0, scale:1},  d:1.1,  e:'power2.out' },
+    clipWipe:  { from:{opacity:0, clipPath:'inset(0 0 100% 0)', y:12}, to:{opacity:1, clipPath:'inset(0 0 0% 0)', y:0}, d:1.15, e:'power2.out' },
+    dropIn:    { from:{opacity:0, y:-28, rotate:2},             to:{opacity:1, y:0, rotate:0},           d:1.0,  e:'power2.out' },
   };
 
+  /* Clave anti-parpadeo: el estado inicial se aplica AHORA (gsap.set),
+     antes de que el usuario llegue scrolleando. Así el elemento nunca se
+     ve completo para luego "saltar" a su estado de entrada.
+     Como esto solo corre si GSAP cargó, sin GSAP todo queda visible.   */
   function reveal(els, name, stagger, trigger, start){
     els = Array.prototype.slice.call(els).filter(Boolean);
     if(!els.length) return;
     const fx = EFFECTS[name] || EFFECTS.fadeUp;
-    gsap.fromTo(els, fx.from, Object.assign({}, fx.to, {
-      duration: fx.d, ease: fx.e, stagger: stagger || 0, immediateRender:false, overwrite:'auto',
-      scrollTrigger:{ trigger: trigger || els[0], start: start || 'top 88%', once:true }
+    gsap.set(els, Object.assign({}, fx.from, {willChange:'transform,opacity'}));
+    gsap.to(els, Object.assign({}, fx.to, {
+      duration: fx.d, ease: fx.e, stagger: stagger || 0, overwrite:'auto',
+      clearProps:'willChange,filter,clipPath',
+      scrollTrigger:{ trigger: trigger || els[0], start: start || 'top 92%', once:true }
     }));
   }
 
@@ -1706,48 +1712,48 @@ function scrollAnims() {
   document.querySelectorAll('section, footer').forEach(sec => {
     if(sec.id === 'hero') return;
     const heads = sec.querySelectorAll('.lbl, .ttl, .gline, .dc-title, .it-title, .fch-n1, .fch-amp, .cd-falta');
-    reveal(heads, HEAD[n % HEAD.length], .12, sec, 'top 86%');
+    reveal(heads, HEAD[n % HEAD.length], .14, sec, 'top 94%');
     const bodies = sec.querySelectorAll('p:not(.lbl):not(.ttl):not(.dc-title):not(.it-title):not(.fch-n1):not(.fch-amp), li');
-    reveal(bodies, BODY[n % BODY.length], .07, sec, 'top 82%');
+    reveal(bodies, BODY[n % BODY.length], .1, sec, 'top 92%');
     n++;
   });
 
   /* ── Por elemento, con su propio carácter ── */
-  reveal(document.querySelectorAll('#fecha .fch-rule'), 'clipWipe', .15, '#fecha', 'top 80%');
-  reveal(document.querySelectorAll('#fecha .fch-date'), 'scaleIn', 0, '#fecha', 'top 70%');
+  reveal(document.querySelectorAll('#fecha .fch-rule'), 'clipWipe', .15, '#fecha', 'top 90%');
+  reveal(document.querySelectorAll('#fecha .fch-date'), 'scaleIn', 0, '#fecha', 'top 86%');
 
-  reveal(document.querySelectorAll('.cd-cell'), 'dropIn', .12, '#countdown', 'top 84%');
-  reveal(document.querySelectorAll('.cd-sep'), 'blurIn', .1, '#countdown', 'top 84%');
+  reveal(document.querySelectorAll('.cd-cell'), 'dropIn', .12, '#countdown', 'top 92%');
+  reveal(document.querySelectorAll('.cd-sep'), 'blurIn', .1, '#countdown', 'top 92%');
 
-  reveal(document.querySelectorAll('.loc-icon'), 'rotateIn', .18, '#location', 'top 80%');
-  reveal(document.querySelectorAll('.loc-photo'), 'clipWipe', .2, '#location', 'top 78%');
-  reveal(document.querySelectorAll('.loc-btn'), 'scaleIn', .15, '#location', 'top 74%');
+  reveal(document.querySelectorAll('.loc-icon'), 'rotateIn', .18, '#location', 'top 90%');
+  reveal(document.querySelectorAll('.loc-photo'), 'clipWipe', .2, '#location', 'top 90%');
+  reveal(document.querySelectorAll('.loc-btn'), 'scaleIn', .15, '#location', 'top 88%');
 
-  reveal(document.querySelectorAll('#calBtn'), 'scaleIn', 0, '#calendar', 'top 84%');
+  reveal(document.querySelectorAll('#calBtn'), 'scaleIn', 0, '#calendar', 'top 92%');
 
   /* Itinerario: pasos alternando lados */
   const steps = Array.prototype.slice.call(document.querySelectorAll('.it-step'));
   steps.forEach((st, i) => reveal([st], i % 2 ? 'slideRight' : 'slideLeft', 0, st, 'top 90%'));
-  reveal(document.querySelectorAll('.it-ico'), 'scaleIn', .08, '#itinerary', 'top 80%');
+  reveal(document.querySelectorAll('.it-ico'), 'scaleIn', .08, '#itinerary', 'top 90%');
 
   /* Dress code */
-  reveal(document.querySelectorAll('.rose-divider'), 'clipWipe', 0, '#dresscode', 'top 84%');
-  reveal(document.querySelectorAll('.dc-fig'), 'dropIn', .18, '#dresscode', 'top 78%');
-  reveal(document.querySelectorAll('.dc-acc-item'), 'slideLeft', .14, '#dresscode', 'top 74%');
-  reveal(document.querySelectorAll('.dc-swatches span, .dc-avoid-swatches .dc-sw'), 'scaleIn', .05, '#dresscode', 'top 70%');
-  reveal(document.querySelectorAll('.btn-inspiracion'), 'scaleIn', 0, '#dresscode', 'top 68%');
+  reveal(document.querySelectorAll('.rose-divider'), 'clipWipe', 0, '#dresscode', 'top 92%');
+  reveal(document.querySelectorAll('.dc-fig'), 'dropIn', .18, '#dresscode', 'top 90%');
+  reveal(document.querySelectorAll('.dc-acc-item'), 'slideLeft', .14, '#dresscode', 'top 88%');
+  reveal(document.querySelectorAll('.dc-swatches span, .dc-avoid-swatches .dc-sw'), 'scaleIn', .05, '#dresscode', 'top 86%');
+  reveal(document.querySelectorAll('.btn-inspiracion'), 'scaleIn', 0, '#dresscode', 'top 86%');
 
   /* Galería 3D: la rueda entra completa */
-  reveal(document.querySelectorAll('.wheel-scene'), 'blurIn', 0, '#galeria', 'top 78%');
-  reveal(document.querySelectorAll('.gal-orn'), 'clipWipe', 0, '#galeria', 'top 86%');
+  reveal(document.querySelectorAll('.wheel-scene'), 'blurIn', 0, '#galeria', 'top 90%');
+  reveal(document.querySelectorAll('.gal-orn'), 'clipWipe', 0, '#galeria', 'top 94%');
 
   /* Álbum / RSVP / regalos */
-  reveal(document.querySelectorAll('.alb-qr-frame'), 'rotateIn', 0, '#album', 'top 80%');
-  reveal(document.querySelectorAll('.alb-btn'), 'scaleIn', 0, '#album', 'top 76%');
-  reveal(document.querySelectorAll('.gifts-wrap'), 'fadeUp', .1, '#gifts', 'top 82%');
-  reveal(document.querySelectorAll('.rsvp-toggle'), 'slideRight', 0, '#rsvp', 'top 78%');
-  reveal(document.querySelectorAll('.rsvp-submit-btn'), 'scaleIn', 0, '#rsvp', 'top 74%');
-  reveal(document.querySelectorAll('.rsvp-date-big'), 'blurIn', 0, '#rsvp', 'top 84%');
+  reveal(document.querySelectorAll('.alb-qr-frame'), 'rotateIn', 0, '#album', 'top 90%');
+  reveal(document.querySelectorAll('.alb-btn'), 'scaleIn', 0, '#album', 'top 88%');
+  reveal(document.querySelectorAll('.gifts-wrap'), 'fadeUp', .1, '#gifts', 'top 92%');
+  reveal(document.querySelectorAll('.rsvp-toggle'), 'slideRight', 0, '#rsvp', 'top 90%');
+  reveal(document.querySelectorAll('.rsvp-submit-btn'), 'scaleIn', 0, '#rsvp', 'top 88%');
+  reveal(document.querySelectorAll('.rsvp-date-big'), 'blurIn', 0, '#rsvp', 'top 92%');
 
   /* Footer */
   reveal(document.querySelectorAll('.ft-roses'), 'dropIn', 0, '#footer', 'top 92%');
@@ -2048,7 +2054,7 @@ function addSectionMedals(){
     const lbl=sec.querySelector('.lbl'); if(!lbl) return;
     const m=document.createElement('div'); m.className='sec-medal'; m.innerHTML=`<span>${map[id]}</span>`;
     gsap.set(m,{opacity:0,scale:.7}); sec.insertBefore(m,lbl);
-    ScrollTrigger.create({ trigger:sec, start:'top 86%', once:true,
+    ScrollTrigger.create({ trigger:sec, start:'top 94%', once:true,
       onEnter(){ gsap.to(m,{opacity:1,scale:1,duration:.9,ease:'back.out(1.6)'}); }
     });
   });
@@ -2082,7 +2088,7 @@ function addAuras(){
   document.querySelectorAll('section').forEach(el=>{
     const aura=document.createElement('div'); aura.className='sec-aura';
     el.insertBefore(aura,el.firstChild);
-    ScrollTrigger.create({ trigger:el, start:'top 78%', once:true,
+    ScrollTrigger.create({ trigger:el, start:'top 90%', once:true,
       onEnter(){ aura.classList.add('on'); }
     });
   });
