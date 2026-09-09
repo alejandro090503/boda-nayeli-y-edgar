@@ -1668,36 +1668,101 @@ function initGlobalParticles() {
 }
 
 /* ── SCROLL ANIMATIONS ───────────────────────────────── */
+var _revealsDone=false;
 function scrollAnims() {
-  const ease = 'power3.out';
-  document.querySelectorAll('section').forEach(sec => {
-    const els = sec.querySelectorAll('.lbl,.ttl,.gline');
-    if(els.length) gsap.from(els, { opacity:0, y:22, duration:.7, stagger:.1, ease, scrollTrigger:{ trigger:sec, start:'top 88%', once:true } });
+  if(!window.gsap || !window.ScrollTrigger || _revealsDone) return;
+  _revealsDone=true;
+
+  /* ── Motor de reveal ────────────────────────────────────
+     8 efectos distintos que se reparten por tipo de elemento
+     y rotan por sección para que nada se repita seguido.
+     Siempre fromTo + immediateRender:false: si un trigger no
+     llegara a dispararse, el elemento queda visible.        */
+  const EFFECTS = {
+    fadeUp:    { from:{opacity:0, y:34},                         to:{opacity:1, y:0},               d:.85, e:'power3.out' },
+    slideLeft: { from:{opacity:0, x:-52},                        to:{opacity:1, x:0},               d:.9,  e:'power3.out' },
+    slideRight:{ from:{opacity:0, x:52},                         to:{opacity:1, x:0},               d:.9,  e:'power3.out' },
+    scaleIn:   { from:{opacity:0, scale:.82},                    to:{opacity:1, scale:1},           d:.85, e:'back.out(1.5)' },
+    blurIn:    { from:{opacity:0, filter:'blur(12px)', y:16},    to:{opacity:1, filter:'blur(0px)', y:0}, d:1.05, e:'power2.out' },
+    rotateIn:  { from:{opacity:0, rotate:-6, y:30, scale:.94},   to:{opacity:1, rotate:0, y:0, scale:1},  d:.95, e:'power3.out' },
+    clipWipe:  { from:{opacity:0, clipPath:'inset(0 0 100% 0)', y:18}, to:{opacity:1, clipPath:'inset(0 0 0% 0)', y:0}, d:1, e:'power2.out' },
+    dropIn:    { from:{opacity:0, y:-38, rotate:3},              to:{opacity:1, y:0, rotate:0},     d:.9,  e:'back.out(1.4)' },
+  };
+
+  function reveal(els, name, stagger, trigger, start){
+    els = Array.prototype.slice.call(els).filter(Boolean);
+    if(!els.length) return;
+    const fx = EFFECTS[name] || EFFECTS.fadeUp;
+    gsap.fromTo(els, fx.from, Object.assign({}, fx.to, {
+      duration: fx.d, ease: fx.e, stagger: stagger || 0, immediateRender:false, overwrite:'auto',
+      scrollTrigger:{ trigger: trigger || els[0], start: start || 'top 88%', once:true }
+    }));
+  }
+
+  /* Rotación de efectos para los encabezados: cada sección estrena uno */
+  const HEAD = ['clipWipe','blurIn','slideLeft','scaleIn','fadeUp','slideRight','rotateIn','dropIn'];
+  const BODY = ['fadeUp','blurIn','slideRight','fadeUp','scaleIn','slideLeft','blurIn','fadeUp'];
+  let n = 0;
+  document.querySelectorAll('section, footer').forEach(sec => {
+    if(sec.id === 'hero') return;
+    const heads = sec.querySelectorAll('.lbl, .ttl, .gline, .dc-title, .it-title, .fch-n1, .fch-amp, .cd-falta');
+    reveal(heads, HEAD[n % HEAD.length], .12, sec, 'top 86%');
+    const bodies = sec.querySelectorAll('p:not(.lbl):not(.ttl):not(.dc-title):not(.it-title):not(.fch-n1):not(.fch-amp), li');
+    reveal(bodies, BODY[n % BODY.length], .07, sec, 'top 82%');
+    n++;
   });
-  gsap.from('.cd-content', { opacity:0, y:18, duration:.7, ease, scrollTrigger:{ trigger:'#countdown', start:'top 85%', once:true } });
-  ScrollTrigger.create({ trigger:'#location', start:'top 78%', once:true,
-    onEnter(){ gsap.from('.loc-block', { opacity:0, y:36, duration:.75, stagger:.18, ease }); }
-  });
-  gsap.from('#calendar .cal-sub', { opacity:0, y:14, duration:.6, ease, scrollTrigger:{ trigger:'#calendar', start:'top 84%', once:true } });
-  gsap.from('#calBtn', { y:14, duration:.55, ease:'back.out(1.4)', scrollTrigger:{ trigger:'#calendar', start:'top 85%', once:true } });
-  ScrollTrigger.create({ trigger:'#itinerary', start:'top 78%', once:true,
-    onEnter(){ gsap.from('.it-step', { opacity:0, y:28, duration:.6, stagger:.12, ease }); }
-  });
-  ScrollTrigger.create({ trigger:'#dresscode', start:'top 78%', once:true,
-    onEnter(){
-      gsap.from('.dc-title', { opacity:0, y:18, duration:.7, ease });
-      gsap.from('.dc-couple', { opacity:0, y:24, duration:.8, delay:.2, ease });
-      gsap.from('.dc-msg', { opacity:0, y:14, duration:.55, delay:.45, ease });
-    }
-  });
-  gsap.from('.gifts-wrap', { opacity:0, y:18, duration:.6, ease, scrollTrigger:{ trigger:'#gifts', start:'top 82%', once:true } });
-  gsap.from('.fam-ttl', { opacity:0, y:18, duration:.6, stagger:.18, ease, scrollTrigger:{ trigger:'#family', start:'top 78%', once:true } });
-  gsap.from('.fam-card,.fam-padcard', { opacity:0, y:20, duration:.55, stagger:.06, ease, scrollTrigger:{ trigger:'#family', start:'top 78%', once:true } });
-  gsap.from('.alb-qr-frame', { opacity:0, y:28, duration:.75, ease:'back.out(1.3)', scrollTrigger:{ trigger:'#album', start:'top 80%', once:true } });
-  gsap.from(['.alb-btn','.alb-hint'], { opacity:0, y:16, duration:.55, stagger:.12, ease, scrollTrigger:{ trigger:'#album', start:'top 78%', once:true } });
-  gsap.from('.rsvp-form-wrap', { opacity:0, y:18, duration:.6, ease, scrollTrigger:{ trigger:'#rsvp', start:'top 82%', once:true } });
-  gsap.from('.ft-roses', { opacity:0, y:-20, duration:.8, ease, scrollTrigger:{ trigger:'#footer', start:'top 90%', once:true } });
-  gsap.from(['.ft-msg','.ft-nofaltes','.ft-rings'], { opacity:0, y:24, duration:.7, stagger:.15, ease, scrollTrigger:{ trigger:'.ft-body', start:'top 90%', once:true } });
+
+  /* ── Por elemento, con su propio carácter ── */
+  reveal(document.querySelectorAll('#fecha .fch-rule'), 'clipWipe', .15, '#fecha', 'top 80%');
+  reveal(document.querySelectorAll('#fecha .fch-date'), 'scaleIn', 0, '#fecha', 'top 70%');
+
+  reveal(document.querySelectorAll('.cd-cell'), 'dropIn', .12, '#countdown', 'top 84%');
+  reveal(document.querySelectorAll('.cd-sep'), 'blurIn', .1, '#countdown', 'top 84%');
+
+  reveal(document.querySelectorAll('.loc-icon'), 'rotateIn', .18, '#location', 'top 80%');
+  reveal(document.querySelectorAll('.loc-photo'), 'clipWipe', .2, '#location', 'top 78%');
+  reveal(document.querySelectorAll('.loc-btn'), 'scaleIn', .15, '#location', 'top 74%');
+
+  reveal(document.querySelectorAll('#calBtn'), 'scaleIn', 0, '#calendar', 'top 84%');
+
+  /* Itinerario: pasos alternando lados */
+  const steps = Array.prototype.slice.call(document.querySelectorAll('.it-step'));
+  steps.forEach((st, i) => reveal([st], i % 2 ? 'slideRight' : 'slideLeft', 0, st, 'top 90%'));
+  reveal(document.querySelectorAll('.it-ico'), 'scaleIn', .08, '#itinerary', 'top 80%');
+
+  /* Dress code */
+  reveal(document.querySelectorAll('.rose-divider'), 'clipWipe', 0, '#dresscode', 'top 84%');
+  reveal(document.querySelectorAll('.dc-fig'), 'dropIn', .18, '#dresscode', 'top 78%');
+  reveal(document.querySelectorAll('.dc-acc-item'), 'slideLeft', .14, '#dresscode', 'top 74%');
+  reveal(document.querySelectorAll('.dc-swatches span, .dc-avoid-swatches .dc-sw'), 'scaleIn', .05, '#dresscode', 'top 70%');
+  reveal(document.querySelectorAll('.btn-inspiracion'), 'scaleIn', 0, '#dresscode', 'top 68%');
+
+  /* Galería 3D: la rueda entra completa */
+  reveal(document.querySelectorAll('.wheel-scene'), 'blurIn', 0, '#galeria', 'top 78%');
+  reveal(document.querySelectorAll('.gal-orn'), 'clipWipe', 0, '#galeria', 'top 86%');
+
+  /* Álbum / RSVP / regalos */
+  reveal(document.querySelectorAll('.alb-qr-frame'), 'rotateIn', 0, '#album', 'top 80%');
+  reveal(document.querySelectorAll('.alb-btn'), 'scaleIn', 0, '#album', 'top 76%');
+  reveal(document.querySelectorAll('.gifts-wrap'), 'fadeUp', .1, '#gifts', 'top 82%');
+  reveal(document.querySelectorAll('.rsvp-toggle'), 'slideRight', 0, '#rsvp', 'top 78%');
+  reveal(document.querySelectorAll('.rsvp-submit-btn'), 'scaleIn', 0, '#rsvp', 'top 74%');
+  reveal(document.querySelectorAll('.rsvp-date-big'), 'blurIn', 0, '#rsvp', 'top 84%');
+
+  /* Footer */
+  reveal(document.querySelectorAll('.ft-roses'), 'dropIn', 0, '#footer', 'top 92%');
+  reveal(document.querySelectorAll('.ft-nofaltes'), 'scaleIn', 0, '.ft-body', 'top 92%');
+  reveal(document.querySelectorAll('.el-sep'), 'clipWipe', 0, '.ft-body', 'top 90%');
+  reveal(document.querySelectorAll('.el-credit'), 'blurIn', 0, '.ft-body', 'top 88%');
+
+  /* Cualquier imagen que no haya entrado por las reglas de arriba */
+  const done = new Set();
+  document.querySelectorAll('.loc-photo img, .dc-fig img, .wheel-card img, .ft-roses img, .fch-bg, .it-bg').forEach(i => done.add(i));
+  const rest = Array.prototype.slice.call(document.querySelectorAll('section img, footer img'))
+    .filter(i => !done.has(i) && !i.closest('#hero') && !i.closest('#loader'));
+  rest.forEach(img => reveal([img], 'clipWipe', 0, img, 'top 90%'));
+
+  ScrollTrigger.refresh();
 }
 
 /* ── COUNTDOWN ───────────────────────────────────────── */
@@ -2153,6 +2218,13 @@ function ambientWind(){
   function shut(){ modal.classList.remove('is-open'); modal.setAttribute('aria-hidden','true'); document.body.classList.remove('dc-modal-open'); }
   btn.addEventListener('click',open); close.addEventListener('click',shut); back.addEventListener('click',shut);
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') shut(); });
+})();
+
+/* Reveals: activos desde la carga, no solo tras abrir el sobre */
+(function(){
+  function go(){ try{ scrollAnims(); }catch(e){} }
+  if(document.readyState==='complete') go();
+  else window.addEventListener('load', go);
 })();
 </script>
 </body>
