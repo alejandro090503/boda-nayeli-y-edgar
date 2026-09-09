@@ -1634,7 +1634,7 @@ function countdown(){
   document.getElementById('cd-m').textContent=pad(mins);
   const sEl=document.getElementById('cd-s'), ns=pad(secs);
   if(ns!==prevS){
-    gsap.fromTo(sEl,{y:-6,opacity:.3},{y:0,opacity:1,duration:.22,ease:'power2.out'});
+    if(window.gsap) gsap.fromTo(sEl,{y:-6,opacity:.3},{y:0,opacity:1,duration:.22,ease:'power2.out'});
     sEl.textContent=ns; prevS=ns;
   }
 }
@@ -2060,6 +2060,9 @@ function ambientWind(){
     });
   });
 })();
+
+/* Countdown: arranca al cargar, sin depender de la apertura del sobre */
+(function(){ try{ countdown(); setInterval(countdown,1000); }catch(e){} })();
 </script>
 </body>
 </html>
