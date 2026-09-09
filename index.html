@@ -2232,6 +2232,32 @@ function ambientWind(){
   if(document.readyState==='complete') go();
   else window.addEventListener('load', go);
 })();
+
+/* Red de seguridad de los reveals: si por lo que sea (rAF pausado, GSAP
+   sin cargar, triggers mal calculados) un elemento se queda invisible
+   estando ya a la vista, se muestra con una transición suave.        */
+(function(){
+  function visible(el){ var r=el.getBoundingClientRect();
+    return r.top < window.innerHeight*0.98 && r.bottom > 0; }
+  function rescue(){
+    document.querySelectorAll("section *, footer *").forEach(function(el){
+      if(el.closest("#hero")||el.closest("#loader")) return;
+      var c=getComputedStyle(el);
+      if(parseFloat(c.opacity) < 0.05 && visible(el) && el.offsetHeight>0){
+        el.style.transition="opacity .8s ease, transform .8s ease, filter .8s ease";
+        el.style.opacity="1"; el.style.transform="none";
+        el.style.filter="none"; el.style.clipPath="none";
+      }
+    });
+  }
+  var n=0, id=setInterval(function(){ rescue(); if(++n>40) clearInterval(id); }, 1200);
+  window.addEventListener("scroll", function(){ clearTimeout(window.__rsc);
+    window.__rsc=setTimeout(rescue, 1600); }, {passive:true});
+  window.addEventListener("load", function(){
+    if(window.ScrollTrigger){ ScrollTrigger.refresh();
+      setTimeout(function(){ ScrollTrigger.refresh(); }, 600); }
+  });
+})();
 </script>
 </body>
 </html>
